@@ -2,6 +2,14 @@
 # Include variables and define needed variables.
 - name: Include OS-specific variables.
   include_vars: "{{ ansible_os_family }}.yml"
+  when:
+    - (ansible_os_family != "RedHat") or (ansible_os_family == "RedHat" and apache_enablerepo.find("scl") == -1)
+
+- name: Include OS-specific variables. [ Redhat SCL repo ]
+  include_vars: "{{ ansible_os_family }}-scl.yml"
+  when:
+    - ansible_os_family == "RedHat"
+    - apache_enablerepo.find("scl") != -1
 
 - name: Include variables for Amazon Linux.
   include_vars: "AmazonLinux.yml"
@@ -16,6 +24,14 @@
 
 # Setup/install tasks.
 - include_tasks: "setup-{{ ansible_os_family }}.yml"
+  when:
+    - (ansible_os_family != "RedHat") or (ansible_os_family == "RedHat" and apache_enablerepo.find("scl") == -1)
+
+# Setup/install tasks.
+- include_tasks: "setup-{{ ansible_os_family }}-scl.yml"
+  when:
+    - ansible_os_family == "RedHat"
+    - apache_enablerepo.find("scl") != -1
 
 # Figure out what version of Apache is installed.
 - name: Get installed version of Apache.
